@@ -1,0 +1,70 @@
+const newUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
+
+// Regex for logging (default: log all)
+const logRegex = /feishu\.cn/;
+
+// Regex for modification (default: modify none)
+const modifyRegex = /feishu\.cn/;
+
+function updateRules() {
+  const rule = {
+    id: 1,
+    priority: 1,
+    action: {
+      type: "modifyHeaders",
+      requestHeaders: [
+        { header: "User-Agent", operation: "set", value: newUserAgent }
+      ]
+    },
+    condition: {
+      regexFilter: modifyRegex.source,
+      resourceTypes: ["main_frame"]//, "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest"]
+    }
+  };
+
+  chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: [1],
+    addRules: [rule]
+  });
+}
+
+chrome.runtime.onInstalled.addListener(updateRules);
+
+// Logging
+chrome.webRequest.onSendHeaders.addListener(
+  (details) => {
+    if (logRegex.test(details.url)) {
+      const uaHeader = details.requestHeaders.find(h => h.name.toLowerCase() === "user-agent");
+      console.log({
+        url: details.url,
+        userAgent: uaHeader ? uaHeader.value : "Not found",
+        modified: modifyRegex.test(details.url)
+      });
+    }
+  },
+  { urls: ["<all_urls>"], types: ["main_frame"] },
+  ["requestHeaders"]
+);
+
+// Function to update regex patterns
+function updateRegexPatterns(newLogPattern, newModifyPattern) {
+  try {
+    // Update log regex
+    if (newLogPattern) {
+      logRegex.compile(newLogPattern);
+    }
+    
+    // Update modify regex and rules
+    if (newModifyPattern) {
+      modifyRegex.compile(newModifyPattern);
+      updateRules();
+    }
+    
+    console.log("Regex patterns updated successfully");
+  } catch (error) {
+    console.error("Error updating regex patterns:", error);
+  }
+}
+
+// Example usage (you can call this from other parts of your extension)
+// updateRegexPatterns("^https://example\\.com/.*", "^https://modify\\.example\\.com/.*");

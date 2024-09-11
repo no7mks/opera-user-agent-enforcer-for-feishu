@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "User-Agent Modifier",
+  "version": "1.0",
+  "description": "Modify and log User-Agent based on regex",
+  "permissions": ["declarativeNetRequest", "storage", "webRequest"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
