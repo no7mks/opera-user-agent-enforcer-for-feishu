@@ -1,10 +1,14 @@
 const newUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
 
 // Regex for logging (default: log all)
-const logRegex = /feishu\.cn/;
+const logRegex = /feishu\.cn\/(space|wiki|drive|base|monitor)/;
 
 // Regex for modification (default: modify none)
-const modifyRegex = /feishu\.cn/;
+const modifyRegex = logRegex; ///feishu\.cn/;
+
+const interestedTypes = ["main_frame", "sub_frame", "xmlhttprequest" /*, "stylesheet", "script", "image", "font", "object"/**/];
+
+console.log("hello");
 
 function updateRules() {
   const rule = {
@@ -18,7 +22,7 @@ function updateRules() {
     },
     condition: {
       regexFilter: modifyRegex.source,
-      resourceTypes: ["main_frame"]//, "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest"]
+      resourceTypes: interestedTypes
     }
   };
 
@@ -41,8 +45,14 @@ chrome.webRequest.onSendHeaders.addListener(
         modified: modifyRegex.test(details.url)
       });
     }
+    else {
+      console.log({
+        failed: true,
+        url: details.url
+      })
+    }
   },
-  { urls: ["<all_urls>"], types: ["main_frame"] },
+  { urls: ["<all_urls>"], types: interestedTypes },
   ["requestHeaders"]
 );
 
